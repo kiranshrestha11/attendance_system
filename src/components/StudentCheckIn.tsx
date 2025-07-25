@@ -33,7 +33,7 @@ export const StudentCheckIn: React.FC = () => {
         .from('students')
         .select('*')
         .eq('email', email.trim().toLowerCase())
-        .single();
+        .maybeSingle();
         
         console.log('✅ Student data:', studentData);
         console.log('❌ Error:', studentError);
@@ -42,12 +42,7 @@ export const StudentCheckIn: React.FC = () => {
 
       if (studentError) {
         console.log('Error details:', studentError);
-        if (studentError.code === 'PGRST116') {
-          // No rows returned
-          setError('Student not found. Please check your email or contact your teacher.');
-        } else {
-          setError(`Database error: ${studentError.message}`);
-        }
+        setError(`Database error: ${studentError.message}`);
         setStudent(null);
         return;
       }
