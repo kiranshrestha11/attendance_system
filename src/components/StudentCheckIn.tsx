@@ -28,6 +28,16 @@ export const StudentCheckIn: React.FC = () => {
     setError('');
 
     try {
+      // First, let's check what students exist in the database
+      console.log('🔍 Searching for email:', email.trim().toLowerCase());
+      
+      const { data: allStudents, error: allStudentsError } = await supabase
+        .from('students')
+        .select('*');
+      
+      console.log('📋 All students in database:', allStudents);
+      console.log('❌ All students error:', allStudentsError);
+
       // First, let's try an exact match with eq (case-insensitive)
       const { data: studentData, error: studentError } = await supabase
         .from('students')
@@ -35,9 +45,18 @@ export const StudentCheckIn: React.FC = () => {
         .eq('email', email.trim().toLowerCase())
         .maybeSingle();
         
-        console.log('✅ Student data:', studentData);
-        console.log('❌ Error:', studentError);
-        console.log('Student fetch result:', { studentData, studentError });
+      console.log('✅ Student data:', studentData);
+      console.log('❌ Error:', studentError);
+      console.log('🔍 Searching for exact email:', email.trim().toLowerCase());
+      
+      // Let's also try a case-insensitive search
+      const { data: iLikeData, error: iLikeError } = await supabase
+        .from('students')
+        .select('*')
+        .ilike('email', email.trim());
+      
+      console.log('🔍 iLike search result:', iLikeData);
+      console.log('❌ iLike error:', iLikeError);
 
 
       if (studentError) {
