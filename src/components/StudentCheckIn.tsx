@@ -28,17 +28,31 @@ export const StudentCheckIn: React.FC = () => {
     setError('');
 
     try {
+      // First, let's try an exact match with eq (case-insensitive)
       const { data: studentData, error: studentError } = await supabase
         .from('students')
         .select('*')
-        .ilike('email',email.trim())
-        .maybeSingle();
+        .eq('email', email.trim().toLowerCase())
+        .single();
+        
         console.log('✅ Student data:', studentData);
         console.log('❌ Error:', studentError);
         console.log('Student fetch result:', { studentData, studentError });
 
 
-      if (studentError || !studentData) {
+      if (studentError) {
+        console.log('Error details:', studentError);
+        if (studentError.code === 'PGRST116') {
+          // No rows returned
+          setError('Student not found. Please check your email or contact your teacher.');
+        } else {
+          setError(`Database error: ${studentError.message}`);
+        }
+        setStudent(null);
+        return;
+      }
+
+      if (!studentData) {
         setError('Student not found. Please check your email or contact your teacher.');
         setStudent(null);
         return;
@@ -53,10 +67,11 @@ export const StudentCheckIn: React.FC = () => {
         .select('*')
         .eq('student_id', studentData.id)
         .eq('date', today)
-        .single();
+        .maybeSingle();
 
       setCurrentRecord(recordData);
     } catch (err) {
+      console.error('Unexpected error:', err);
       setError('An error occurred while finding student');
     } finally {
       setIsLoading(false);
